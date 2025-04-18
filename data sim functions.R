@@ -7,6 +7,7 @@ data_sim <- function(n = 500,
                      high_noise = FALSE, 
                      n_extra_vars = 0, 
                      collinear = FALSE, 
+                     interactions = FALSE,
                      beta = c(0.03, 0.5, 0.7, 1.2),
                      baseline_scale = 0.01,
                      censoring_range = c(3, 5),
@@ -121,3 +122,4 @@ data_sim <- function(n = 500,
   return(long_data)
 }
 
+#data_example <- data_sim(seed = 42, interactions = TRUE)
