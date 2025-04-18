@@ -30,9 +30,13 @@ data_sim <- function(n = 500,
   
   if (!is.null(seed)) set.seed(seed)
   
-  # generate irregular fu time
   generate_time_points <- function(t_max) {
-    sort(round(runif(sample(4:8, 1), min = 0.1, max = t_max), 1))
+    # ensures generated times are strictly incr with positive gaps
+    repeat {
+      times <- sort(round(runif(sample(4:8, 1), min = 0.1, max = t_max), 1))
+      if (length(unique(times)) > 1 && all(diff(times) > 0)) break
+    }
+    return(times)
   }
   
   # create long dataset w time points
@@ -107,19 +111,19 @@ data_sim <- function(n = 500,
       event = as.numeric(event_time <= censor_time)
     )
   
-  # finalize counting process for coxph mostly
+  # finalize counting process 
   long_data <- long_data %>%
     left_join(event_times, by = "ID") %>%
-    filter(time <= final_time) %>%
+    filter(time <= final_time & time > 0 ) %>%
     group_by(ID) %>%
     mutate(
       start = lag(time, default = 0),
       stop = time,
-      event_flag = as.numeric(stop == final_time & event == 1)
-    ) %>%
+      .keep = "all",
+      event_flag = as.numeric(stop == final_time & event == 1)) %>%
     ungroup()
   
   return(long_data)
 }
 
-#data_example <- data_sim(seed = 42, interactions = TRUE)
+data_example <- data_sim(seed = 42, interactions = TRUE)
