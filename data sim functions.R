@@ -7,7 +7,7 @@ data_sim <- function(n = 500,
                      high_noise = FALSE, 
                      n_extra_vars = 0, 
                      interactions = FALSE,
-                     beta = c(0.03, 0.2, 0.7),
+                     beta = c(0.03, 0.2, 0.7, 0.4),
                      baseline_scale = 0.01,
                      censoring_range = c(3, 5),
                      seed = NULL) {
@@ -27,11 +27,12 @@ data_sim <- function(n = 500,
   
   
   if (!is.null(seed)) set.seed(seed)
+  if (length(beta) == 3) beta <- c(beta, 0)
   
   generate_time_points <- function(t_max) {
     # ensures generated times are strictly incr with positive gaps
     repeat {
-      times <- sort(round(runif(sample(4:8, 1), min = 0.1, max = t_max), 1))
+      times <- sort(runif(sample(4:8, 1), min = 0.1, max = t_max))
       if (length(unique(times)) > 1 && all(diff(times) > 0)) break
     }
     return(times)
@@ -45,9 +46,7 @@ data_sim <- function(n = 500,
   baseline <- data.frame(
     ID = 1:n,
     age = rnorm(n, 60, 10),
-    x1 = rnorm(n),
-    sex = factor(sample(c("male", "female"), n, replace = TRUE)),
-    group = factor(sample(c("control", "treatment"), n, replace = TRUE))
+    x1 = rnorm(n)
   )
   
   # optional noise params (not incl in linpred)
@@ -62,22 +61,19 @@ data_sim <- function(n = 500,
     left_join(baseline, by = "ID") %>%
     group_by(ID) %>%
     mutate(
-      id_noise = rnorm(1, 0, 0.5), # patients pecific noise
-      x_td1 = sin(time + id_noise) + if (high_noise) rnorm(n(), 0, 1) else 0
+      id_noise = first(rnorm(1, 0, 0.5)), # patients pecific noise
+      x_td1 = sin(2 * pi * (time / t_max + id_noise)) + if (high_noise) rnorm(n(), 0, 1) else 0
     ) %>%
-
     ungroup()
   
   # create linear predictor and hazard fcn
   long_data <- long_data %>%
     mutate(
-      sex_numeric = ifelse(sex == "male", 1, 0),
-      group_numeric = ifelse(group == "treatment", 1, 0),
       interaction_term = if (interactions) x1 * x_td1 else 0, # optional interaction
       linpred = if (nonlinear) {
-        beta[1]*age + beta[2]*x1^2 + beta[3]*sin(x_td1) + interaction_term
+        beta[1]*age + beta[2]*x1^2 + beta[3]*x_td1 + beta[4]*interaction_term
       } else {
-        beta[1]*age + beta[2]*x1 + beta[3]*x_td1 + interaction_term
+        beta[1]*age + beta[2]*x1 + beta[3]*x_td1 + beta[4]*interaction_term
       },
       hazard = baseline_scale * exp(linpred)
     )
