@@ -114,4 +114,4 @@ data_sim <- function(n = 500,
   return(long_data)
 }
 
-data_example <- data_sim(seed = 42, interactions = TRUE)
+#data_example <- data_sim(seed = 42, interactions = TRUE)
