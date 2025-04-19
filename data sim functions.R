@@ -6,7 +6,6 @@ data_sim <- function(n = 500,
                      nonlinear = TRUE, 
                      high_noise = FALSE, 
                      n_extra_vars = 0, 
-                     collinear = FALSE, 
                      interactions = FALSE,
                      beta = c(0.03, 0.2, 0.7),
                      baseline_scale = 0.01,
@@ -20,7 +19,6 @@ data_sim <- function(n = 500,
   #   nonlinear       - Whether to include non-linear terms in the hazard model
   #   high_noise      - Whether to increase noise in time-dependent covariates
   #   n_extra_vars    - Number of extra baseline covariates to simulate (noise only)
-  #   collinear       - Whether to make x_td2 highly correlated with x_td1
   #   interactions    - Whether to include interaction terms in the linear predictor
   #   beta            - Coefficients for the covariates in the linear predictor (length 4)
   #   baseline_scale  - Multiplier to control the overall magnitude of the hazard
