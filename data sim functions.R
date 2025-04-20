@@ -57,12 +57,15 @@ data_sim <- function(n = 500,
   }
   
   # merge baseline covariates, generate time dependent covariates
+  
+  noise_term <- if (high_noise) rnorm(nrow(time_df), 0, 1) else 0
+  
   long_data <- time_df %>%
     left_join(baseline, by = "ID") %>%
     group_by(ID) %>%
     mutate(
       id_noise = first(rnorm(1, 0, 0.05)), # patients pecific noise
-      x_td1 = sin(2 * pi * (time + id_noise)) + if (high_noise) rnorm(n, 0, 1) else 0
+      x_td1 = sin(2 * pi * (time + id_noise)) + noise_term[cur_group_rows()]
     ) %>%
     ungroup()
   
