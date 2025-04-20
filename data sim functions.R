@@ -9,7 +9,7 @@ data_sim <- function(n = 500,
                      interactions = FALSE,
                      beta = c(0.05, 1,5, 0.7, 0.4),
                      baseline_scale = 0.01,
-                     censoring_range = c(4.5, 5),
+                     censoring_range = c(2.5,5),
                      seed = NULL) {
   
   # Function to simulate one dataset 
@@ -32,7 +32,7 @@ data_sim <- function(n = 500,
   generate_time_points <- function(t_max) {
     # ensures generated times are strictly incr with positive gaps
     repeat {
-      times <- sort(runif(sample(10:20, 1), min = 0.1, max = t_max))
+      times <- sort(runif(sample(15:20, 1), min = 0.1, max = t_max))
       if (length(unique(times)) > 1 && all(diff(times) > 0)) break
     }
     return(times)
@@ -58,14 +58,13 @@ data_sim <- function(n = 500,
   
   # merge baseline covariates, generate time dependent covariates
   
-  noise_term <- if (high_noise) rnorm(nrow(time_df), 0, 1) else 0
-  
   long_data <- time_df %>%
     left_join(baseline, by = "ID") %>%
     group_by(ID) %>%
     mutate(
       id_noise = first(rnorm(1, 0, 0.05)), # patients pecific noise
-      x_td1 = sin(2 * pi * (time + id_noise)) + noise_term[cur_group_rows()]
+      noise_component = if (high_noise) rnorm(n(), 0, 1) else rep(0, n()),
+      x_td1 = sin(2 * pi * (time + id_noise)) + noise_component
     ) %>%
     ungroup()
   

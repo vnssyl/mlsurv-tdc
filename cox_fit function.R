@@ -21,6 +21,7 @@ cox_fit <- function(sim_data, use_squared = FALSE, use_interactions = FALSE) {
   }
   
   formula <- as.formula(paste("Surv(start, stop, event_flag) ~", paste(terms, collapse = " + ")))
+  print(formula)
   
   # fit model
   cox_model <- coxph(formula, data = sim_data, x = TRUE)
