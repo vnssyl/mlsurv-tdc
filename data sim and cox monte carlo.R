@@ -1,10 +1,13 @@
+source("cox_fit function.R")
+source("data sim functions.R")
+
 # create grid
 grid <- expand.grid(
   nonlinear = c(TRUE, FALSE),
   interactions = c(TRUE, FALSE),
   high_noise = c(TRUE, FALSE),
   n_extra_vars = c(0, 10),
-  replicate = 1:30  
+  replicate = 1:200  
 )
 
 # init results df
@@ -30,7 +33,7 @@ for (i in 1:nrow(grid)) {
       interactions = params$interactions,
       high_noise = params$high_noise,
       n_extra_vars = params$n_extra_vars,
-      beta = c(0.05, 0.7, 1.5, 0.8)
+      beta = c(0.05, 1.1, 0.8, 0.8)
     )
   }, error = function(e) {
     message(paste("Simulation error (replicate", params$replicate, "):", e$message))
@@ -47,7 +50,7 @@ for (i in 1:nrow(grid)) {
         use_interactions = params$interactions
       )
     }, error = function(e) {
-      message(paste("Model fitting error (replicate", params$replicate, "):", e$message))
+      message(paste("Model fitting error (replicate", params$replicate, "):", e$message, "i=",i))
       return(NULL)
     })
     
@@ -91,3 +94,5 @@ results_summary <- results %>%
     mce_cindex = sd_cindex / sqrt(n()),  # Monte Carlo Error
     .groups = "drop"
   )
+
+write.csv(results_summary, "cox_results_summary.csv", row.names = FALSE)
