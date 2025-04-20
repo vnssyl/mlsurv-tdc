@@ -21,7 +21,6 @@ cox_fit <- function(sim_data, use_squared = FALSE, use_interactions = FALSE) {
   }
   
   formula <- as.formula(paste("Surv(start, stop, event_flag) ~", paste(terms, collapse = " + ")))
-  print(formula)
   
   # fit model
   cox_model <- coxph(formula, data = sim_data, x = TRUE)
@@ -30,16 +29,10 @@ cox_fit <- function(sim_data, use_squared = FALSE, use_interactions = FALSE) {
   sim_data$lp <- predict(cox_model, newdata = sim_data, type = "lp")
   
   # c-index
-  eval_data <- sim_data %>%
-    group_by(ID) %>%
-    slice_tail(n = 1) %>%
-    ungroup()
-  
-  c_index <- concordance(Surv(final_time, event) ~ lp, data = eval_data)$concordance
+  c_index <- summary(cox_model)$concordance[1]
   
   return(list(
     model = cox_model,
-    c_index = c_index,
-    eval_data = eval_data
+    c_index = c_index
   ))
 }
